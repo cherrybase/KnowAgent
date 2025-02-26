@@ -1,5 +1,5 @@
 const { vectorDb } = require("./../models/milvus")
-
+const { generateEmbedding } = require("./gpt")
 async function loadDb(){
   await vectorDb.loadCollection({
     collection_name: "qaSchema"

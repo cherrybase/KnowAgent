@@ -16,4 +16,20 @@ async function generateEmbedding(text,dims=512) {
   }
 }
 
-module.exports = { generateEmbedding }
+async function getModelResponse(topMatches,userQuestion){
+  let relevantInfo = ""
+  for(let i=0;i<topMatches.length;i++){
+    relevantInfo+=`${i+1}. Question : ${topMatches[i].question} \n Answer : ${topMatches[i].answer} \n`
+  }
+  const systemPrompt = `You are Question and answer bot for al mulla exchange. \n NEVER invent details. \n
+  Please use the following relevant information to help answer the user's question:
+  ${relevantInfo}
+  If the information provided doesn't fully answer the user's question, please state that you don't have enough information.`
+  const completion = await openai.chat.completions.create({
+    model: "ft:gpt-4o-mini-2024-07-18:personal:remittance-bot-v2:B4QmFVQU",
+    messages: [{ role: "system", content: systemPrompt},{ role: "user", content: userQuestion}]
+  })
+  return completion.choices[0].message.content;
+}
+
+module.exports = { generateEmbedding , getModelResponse }

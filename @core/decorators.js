@@ -59,6 +59,8 @@ function RequestMapping({ path, method }) {
 function ResponseBody() {
   let responseType = "json";
   return function (originalMethod, context) {
+    console.log(originalMethod)
+    console.log(`context : ${context}`)
     if (context?.kind !== "method" || !context?.access) {
       throw new Error("@ResponseBody can only be used on methods!");
     }
@@ -70,7 +72,8 @@ function ResponseBody() {
 function ResponseView({  }) {
   let responseType = "view";
   return function (originalMethod, context) {
-    if (context.kind !== "method" || !context.access) {
+    
+    if (context?.kind !== "method" || !context.access) {
       throw new Error("@ResponseView can only be used on methods!");
     }
     mappings.addHandler(originalMethod)
