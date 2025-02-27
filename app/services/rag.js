@@ -1,5 +1,6 @@
 const { vectorDb } = require("./../models/milvus")
-const { generateEmbedding } = require("./gpt")
+const { generateEmbedding } = require("./gpt");
+const { getExeTime } = require("./util");
 async function loadDb(){
   await vectorDb.loadCollection({
     collection_name: "qaSchema"
@@ -12,8 +13,9 @@ async function loadDb(){
  * @param {number} topK - Number of results to return
  * @returns {Promise<Array>} - Array of search results
  */
-async function semanticSearch(collectionName, embedding, topK = 3) {
+async function semanticSearch(collectionName, embedding, topK = 2) {
   try {
+    let start = Date.now();
     
     // Perform vector similarity search
     const searchResult = await vectorDb.search({
@@ -24,7 +26,7 @@ async function semanticSearch(collectionName, embedding, topK = 3) {
       output_fields: ["question", "answer"],
       metric_type: "COSINE"
     });
-    
+    await getExeTime("VectorSearch",start)
     return searchResult.results;
   } catch (error) {
     console.error("Error performing semantic search:", error);
@@ -41,7 +43,9 @@ async function semanticSearch(collectionName, embedding, topK = 3) {
 async function performRAG(userQuestion, collectionName) {
   try {
     // 1. Generate embedding for the user question
+    let start = Date.now();
     console.log("Generating embedding for user question...");
+    
     const questionEmbedding = await generateEmbedding(userQuestion);
     
     // 2. Perform semantic search to find similar questions
@@ -56,7 +60,7 @@ async function performRAG(userQuestion, collectionName) {
     }));
     
     console.log(`Found ${topMatches.length} relevant matches`);
-    
+    await getExeTime("RAG",start);
     return topMatches;
     
     // The caller can then pass these top matches to their fine-tuned model

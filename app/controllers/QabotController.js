@@ -2,6 +2,7 @@ import { Controller, RequestMapping, ResponseView, AuthRequired } from "@bootloa
 // import { ResponseBody } from "./../../@core/decorators";
 import { performRAG } from "../services/rag";
 import { getModelResponse } from "../services/gpt";
+import { getExeTime } from "../services/util";
 
 @Controller({ path: "/qabot", middleware: "ClassLevelMiddleware" })
 export default class QabotController {
