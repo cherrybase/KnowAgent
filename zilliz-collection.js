@@ -70,9 +70,9 @@ async function main() {
   const jsonlFilePath = './embeddingTest.jsonl'; // Replace with your JSONL file path
   // const data = await getData(jsonlFilePath);
   // console.log('data:', data); // Use console.log with an object rather than string interpolation.
-  // await createCollection(collectionName);
+  await createCollection(collectionName);
   // await insertData(collectionName,jsonlFilePath);
-  console.log(JSON.stringify(await vectorDb.describeCollection({ collection_name : collectionName })));
+  // console.log(JSON.stringify(await vectorDb.describeCollection({ collection_name : collectionName })));
 }
 
 main(); // Call the async main function

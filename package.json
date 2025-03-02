@@ -23,6 +23,7 @@
     "@bootloader/core": "^0.0.4",
     "@bootloader/local": "^1.0.0",
     "@bootloader/redison": "^1.1.0",
+    "@huggingface/transformers": "^3.3.3",
     "@zilliz/milvus2-sdk-node": "^2.4.9",
     "body-parser": "^1.19.0",
     "bootjs-project": "file:",
@@ -33,6 +34,7 @@
     "ejs": "^3.1.9",
     "express": "^4.18.2",
     "openai": "^4.85.4",
+    "sharp": "^0.33.5",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1"
   },
