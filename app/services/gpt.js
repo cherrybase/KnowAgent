@@ -49,15 +49,23 @@ async function getModelResponse(topMatches, userQuestion, isOpenAi) {
   }
   const systemPrompt = `You are Question and answer bot for al mulla exchange. \n NEVER invent details. \n
   Please use the following relevant information to help answer the user's question:
-  ${relevantInfo}
-  If information provided isnt related to users question. Respond saying service user is asking for isnt provided by Al Mulla Exchange.Maintain context of user question while you respond`;
+  <Relevant Info> \n
+  ${relevantInfo} \n
+  <Relevant Info> \n 
+  <Contact Info> \n
+    For more information: You can WhatsApp or Call us: +965 1840 123. \n 
+    For more information, please contact us on 1840123 . \n 
+    You can reach out to us on email: Help@almullaexchange.com .\n 
+  <Contact Info>`;
   const completion = await openai.chat.completions.create({
     model: "ft:gpt-4o-mini-2024-07-18:personal:remittance-bot-v2:B4QmFVQU",
     messages: [
       { role: "system", content: systemPrompt },
-      { role: "user", content: `${userQuestion}` },
+      { role: "user", content: `User Question : ${userQuestion} \n If information provided in relevant info section isnt about country mentioned in users question. Respond saying <Insert service or information user is asking for> isnt provided by Al Mulla Exchange. Then attach entirity of contact info section.\n 
+      \n Maintain context of user question while you respond` },
     ],
   });
+  console.log(completion.usage);
   console.log(`answer final : ${completion.choices[0].message.content}`);
   await getExeTime("GPT", start);
   return completion.choices[0].message.content;
