@@ -4,9 +4,11 @@ const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const path = require('path');
 const timeout = require("connect-timeout");
+const { loadDb } = require("./services/rag")
 
 const app = express();
 
+loadDb()
 global.appRoot = path.resolve(__dirname);
 app.set("view engine", "ejs");
 
@@ -16,5 +18,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(cors());
 app.use(timeout("10s"));
+
 
 module.exports = app;
