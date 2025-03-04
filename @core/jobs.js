@@ -1,10 +1,11 @@
 import express from "express";
-import { readdirSync } from "fs";
+import { readdirSync, existsSync } from "fs";
 import { join } from "path";
 import { decorators } from "@bootloader/core";
 import { redison, waitForReady } from "@bootloader/redison";
 import { Queue, Worker } from "bullmq";
 import crypto from "crypto";
+const coreutils = require("./coreutils");
 
 const BATCH_SIZE = 10;
 const MAX_WORKERS = 5;
@@ -16,17 +17,20 @@ async function addJob(name, data) {
   await jobQueue.add("read", data);
 }
 
-async function initJobs({ name }) {
+async function initJobs({ name, path }) {
+  coreutils.log(`initJobs`)
   const router = express.Router();
 
   // Load controllers from the "controllers" directory
-  const controllersPath = join(process.cwd(), `${name}/jobs`);
-  const controllerFiles = readdirSync(controllersPath).filter((file) => file.endsWith(".js"));
-
+  const jobsPath = join(process.cwd(), `${path}/jobs`);
+  let controllerFiles = [];
+  if (existsSync(jobsPath)) {
+    controllerFiles = readdirSync(jobsPath).filter((file) => file.endsWith(".js"));
+  }
   let client = await waitForReady();
 
   for (const file of controllerFiles) {
-    const { default: JobClass } = require(join(controllersPath, file));
+    const { default: JobClass } = require(join(jobsPath, file));
 
     if (!JobClass) continue;
 
@@ -38,7 +42,7 @@ async function initJobs({ name }) {
     const jobQueue = new Queue(jobQueueName, { connection: client });
     const taskQueue = new Queue(taskQueueName, { connection: client });
 
-    console.log("initJobs", `${name}/jobs`, file, job._routed);
+    console.log("initJobs", `${path}/jobs`, file, job._routed);
 
     if (!job._routed) {
       //job._routed = true;

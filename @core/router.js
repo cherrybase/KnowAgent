@@ -1,10 +1,12 @@
 import express from "express";
-import { readdirSync } from "fs";
+import { readdirSync, existsSync } from "fs";
 import { join } from "path";
 import { decorators } from "@bootloader/core";
+import config from "@bootloader/config";
 
 import swaggerJsdoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
+import coreutils from "./coreutils";
 
 /**
  * Normalize a given path by removing duplicate slashes and trailing slashes.
@@ -18,23 +20,23 @@ function toArray(value) {
 }
 
 // Middleware wrapper
-function wrapMiddleware(middleware, status = 400, message="Bad request") {
+function wrapMiddleware(middleware, status = 400, message = "Bad request") {
   return async (req, res, next) => {
-      try {
-          const result = await middleware({ request: req, response: res, next : next });
+    try {
+      const result = await middleware({ request: req, response: res, next: next });
 
-          // If middleware explicitly returns `false` or an error object, stop and respond
-          if (result === false) {
-              return res.status(status).json({ error: message });
-          } else if (result && typeof result === 'object') {
-              return res.status(status).json(result);
-          }
-
-          // Otherwise, continue
-          if (!res.headersSent) next();
-      } catch (err) {
-          next(err); // Pass error to Express error handler
+      // If middleware explicitly returns `false` or an error object, stop and respond
+      if (result === false) {
+        return res.status(status).json({ error: message });
+      } else if (result && typeof result === "object") {
+        return res.status(status).json(result);
       }
+
+      // Otherwise, continue
+      if (!res.headersSent) next();
+    } catch (err) {
+      next(err); // Pass error to Express error handler
+    }
   };
 }
 
@@ -47,12 +49,24 @@ function wrapMiddleware(middleware, status = 400, message="Bad request") {
  * @param {Object} options.app - Express app instance.
  * @param {string} options.prefix - Optional prefix for routes.
  */
-export function loadApp({ name = "app", context = "", app, prefix = "" }) {
+export function loadApp({ name = "default", context = "", app, prefix = "" }) {
   const router = express.Router();
+  const appName = name;
+  const appPath = ["default", "app"].indexOf(appName) >= 0 ? "app" : `app-${appName}`;
+
+  // Middleware to set the views directory for rendering templates
+  router.use((req, res, next) => {
+    //console.log("====SET VIEW");
+    res.app.set("views", join(process.cwd(), `${appPath}/views`));
+    next();
+  });
 
   // Load middlewares from the "middlewares" directory
-  const middlewaresPath = join(process.cwd(), `${name}/middlewares`);
-  const middlewaresFiles = readdirSync(middlewaresPath).filter((file) => file.endsWith(".js"));
+  const middlewaresPath = join(process.cwd(), `${appPath}/middlewares`);
+  let middlewaresFiles = [];
+  if (existsSync(middlewaresPath)) {
+    middlewaresFiles = readdirSync(middlewaresPath).filter((file) => file.endsWith(".js"));
+  }
 
   const middlewaresMap = {};
   for (const file of middlewaresFiles) {
@@ -66,7 +80,7 @@ export function loadApp({ name = "app", context = "", app, prefix = "" }) {
   }
 
   // Load controllers from the "controllers" directory
-  const controllersPath = join(process.cwd(), `${name}/controllers`);
+  const controllersPath = join(process.cwd(), `${appPath}/controllers`);
   const controllerFiles = readdirSync(controllersPath).filter((file) => file.endsWith(".js"));
 
   let swaggerPaths = {};
@@ -83,63 +97,67 @@ export function loadApp({ name = "app", context = "", app, prefix = "" }) {
       controller._routed = true;
       let cTarget = new ControllerClass();
 
+      // controller.maps.map(function(map){
+      //   console.log("controller.maps",map,map.handler)
+      // })
+
       // Iterate over controller mappings and set up routes
       for (const { path, method, handler, responseType, name, auth, middleware } of controller.maps) {
         let full_path = normalizePath(`/${prefix}/${controller.path}/${path}`);
         console.log(`@RequestMappings:${method}:/${full_path} ${auth ? "-" : "="}> ${name}`);
 
-        let additionalMiddlewares = [...toArray(controller.middleware),...toArray(middleware)].map(function(mName){
-          return wrapMiddleware(middlewaresMap?.[mName]?.middleware || (() => true ));
-        }) || [];
+        let additionalMiddlewares =
+          [...toArray(controller.middleware), ...toArray(middleware)].map(function (mName) {
+            return wrapMiddleware(middlewaresMap?.[mName]?.middleware || (() => true));
+          }) || [];
 
         const authMiddleware = middlewaresMap.AuthRequired?.middleware;
-        if (auth && typeof authMiddleware == 'function') {
-          additionalMiddlewares = [wrapMiddleware(authMiddleware,401,"Unauthorized"),...additionalMiddlewares];
+        if (auth && typeof authMiddleware == "function") {
+          additionalMiddlewares = [wrapMiddleware(authMiddleware, 401, "Unauthorized"), ...additionalMiddlewares];
         }
 
         // Define route with optional authentication middleware
-        router[method](
-          `${full_path}`,
-          ...additionalMiddlewares,
-          async (req, res) => {
-            try {
+        router[method](`${full_path}`, ...additionalMiddlewares, async (req, res) => {
+          try {
+            const model = {};
+            let CONST = {};
+            // Call the route handler with necessary context
+            //console.log(`${method} : ${full_path}`,cTarget,name,req.body)
+            const result = await handler.call(cTarget, {
+              request: req,
+              response: res,
+              model,
+              CONST,
+            });
+
+            // Handle different response types (view rendering or JSON response)
+            if (responseType === "view" || (!responseType && typeof result === "string")) {
               // Define global constants for the app
-              const CONST = {
-                CDN_URL: "https://deployed.boot-web.pages.dev",
+              CONST = {
+                CDN_URL: config.getIfPresent("cdn.url") || "https://boot-vue.pages.dev",
                 CDN_DEBUG: false,
                 APP_TITLE: "Test",
-                APP: "www",
+                APP: appName,
                 APP_SITE: undefined,
                 APP_CONTEXT: "/www",
                 CDN_VERSION: "5",
                 SESS: "req.session.user", // Placeholder session variable
+                ...CONST,
               };
 
-              const model = {};
-              // Call the route handler with necessary context
-              const result = await handler.call(cTarget, {
-                request: req,
-                response: res,
+              res.render(result, {
                 model,
                 CONST,
+                CONST_SCRIPT: "window.CONST=" + JSON.stringify(CONST),
               });
-
-              // Handle different response types (view rendering or JSON response)
-              if (responseType === "view" || (!responseType && typeof result === "string")) {
-                res.render(result, {
-                  model,
-                  CONST,
-                  CONST_SCRIPT: "window.CONST=" + JSON.stringify(CONST),
-                });
-              } else if (responseType === "json" || !responseType) {
-                res.json(result);
-              }
-            } catch (err) {
-              console.error(err);
-              res.status(500).json({ error: "Internal Server Error" });
+            } else if (responseType === "json" || !responseType) {
+              res.json(result);
             }
+          } catch (err) {
+            console.error(err);
+            res.status(500).json({ error: "Internal Server Error" });
           }
-        );
+        });
 
         // Generate Swagger docs for each route
         swaggerPaths[full_path] = {
@@ -158,12 +176,6 @@ export function loadApp({ name = "app", context = "", app, prefix = "" }) {
     }
   }
 
-  // Middleware to set the views directory for rendering templates
-  router.use((req, res, next) => {
-    res.app.set("views", join(process.cwd(), `${name}/views`));
-    next();
-  });
-
   // Swagger setup
   const swaggerDefinition = {
     openapi: "3.0.0",
@@ -180,5 +192,6 @@ export function loadApp({ name = "app", context = "", app, prefix = "" }) {
   app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
   // Attach the router to the main app with the specified context
+  coreutils.log(`at ${context} `);
   app.use(context, router);
 }

@@ -4,12 +4,15 @@ const { BootLoader } = require("./@core");
 
 new BootLoader()
   .map({
-    name: "app",
     context: "/",
   })
   .map({
-    name: "app-test",
-    context: "/test/",
+    name: "jobs",
+    context: "/jobs/",
+  })
+  .map({
+    name: "chat",
+    context: "/chat/",
   })
   .create(function ({ name, app }) {
     console.log(`APP[${name}]: Created`);

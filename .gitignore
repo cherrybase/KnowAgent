@@ -5,3 +5,5 @@ package-lock.json
 rds-combined-ca-bundle.pem
 bootlink.sh
 dist
+.DStore
+.DS_Store

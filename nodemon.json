@@ -1,6 +1,7 @@
 {
-    "watch": ["server.js", "app", "lib"],
-    "ext": "js",
-    "exec": "babel-node server.js"
-  }
-  
+  "watch": ["@core", "server.js", "app", "app-*/*", "lib", "config"],
+  "ext": "js,json,properties,html,ejs",
+  "exec": "babel-node server.js"
+}
+
+
