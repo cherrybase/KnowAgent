@@ -114,9 +114,9 @@ new BootLoader()
 ```
 ### build/run
 ```bash 
-APP=app-test npm run dev
-APP=app-test npm run build
-APP=app-test npm run server
+APP=test npm run dev
+APP=test npm run build
+APP=test npm run server
 ```
 
 ## Contributing
