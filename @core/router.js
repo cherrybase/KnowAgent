@@ -90,8 +90,13 @@ export function loadApp({ name = "default", context = "", app, prefix = "" }) {
 
     if (!ControllerClass) continue;
 
+    console.log("ControllerClass", ControllerClass.name);
+
     // Get the last registered controller from the decorators system
-    let controller = decorators.mappings.controller[decorators.mappings.controller.length - 1];
+    //let controller = decorators.mappings.controller[decorators.mappings.controller.length - 1];
+    let controller = decorators.mappings.controller.find(ControllerClass);
+
+    if (!controller) continue;
 
     if (!controller._routed) {
       controller._routed = true;
@@ -102,8 +107,9 @@ export function loadApp({ name = "default", context = "", app, prefix = "" }) {
       // })
 
       // Iterate over controller mappings and set up routes
-      for (const { path, method, handler, responseType, name, auth, middleware } of controller.maps) {
-        let full_path = normalizePath(`/${prefix}/${controller.path}/${path}`);
+      for (const { meta } of controller.maps) {
+        const { path, method, handler, responseType, name, auth, middleware } = meta;
+        let full_path = normalizePath(`/${prefix}/${controller.meta.path}/${path}`);
         console.log(`@RequestMappings:${method}:/${full_path} ${auth ? "-" : "="}> ${name}`);
 
         let additionalMiddlewares =
@@ -184,7 +190,7 @@ export function loadApp({ name = "default", context = "", app, prefix = "" }) {
       version: "1.0.0",
       description: "Auto-generated API documentation using Swagger",
     },
-    servers: [{ url: "http://localhost:3000" }],
+    servers: [{ url: `${normalizePath(context).trim('/')}` }],
     paths: swaggerPaths,
   };
 

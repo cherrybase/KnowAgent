@@ -1,9 +1,9 @@
 import { Controller, RequestMapping, ResponseBody, ResponseView } from "@bootloader/core/decorators";
 
-@Controller("/")
-export default class ChatController {
+@Controller("/test")
+export default class TestController {
   constructor() {
-    console.log("===ChatController instantsiated:", this.constructor);
+    console.log("===TestController instantsiated:", this.constructor);
   }
 
   @ResponseView
