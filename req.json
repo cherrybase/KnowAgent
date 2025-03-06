@@ -1,0 +1,86 @@
+{
+  "type": "messages",
+  "meta": {
+    "domain": "kedar",
+    "server": "mehery.xyz",
+    "appId": "67c5573af3326d000156665e",
+    "appCode": "rag_pipeline",
+    "appType": "WEBHOOK",
+    "appMode": "WEBHOOK",
+    "debug": false
+  },
+  "contacts": [
+    {
+      "contactType": "WEBSITE",
+      "channelId": "web:meheryxyz",
+      "lane": "meheryxyz",
+      "contactId": "webg8815cb6d5a5cdb59905f37afe62c29fc_meheryxyz",
+      "profile": {
+        "name": "kedar",
+        "phone": "9702875353",
+        "email": "kedar@mehery.com"
+      },
+      "csid": "g8815cb6d5a5cdb59905f37afe62c29fc"
+    }
+  ],
+  "messages": [
+    {
+      "contactId": "webg8815cb6d5a5cdb59905f37afe62c29fc_meheryxyz",
+      "messageIdExt": null,
+      "timestamp": 1740993400742,
+      "type": "text",
+      "text": {
+        "body": "hello",
+        "type": null
+      },
+      "system": null,
+      "video": null,
+      "voice": null,
+      "audio": null,
+      "document": null,
+      "image": null,
+      "sticker": null,
+      "attachments": null,
+      "location": null,
+      "form": {},
+      "replyTo": {},
+      "referral": {
+        "messageId": null,
+        "messageIdExt": null,
+        "bulkId": null,
+        "sourceUrl": null,
+        "sourceId": null,
+        "sourceCategory": null,
+        "sourceType": null,
+        "title": null,
+        "body": null,
+        "mediaType": null,
+        "mediaUrl": null,
+        "thumbUrl": null,
+        "imageUrl": null,
+        "info": null
+      },
+      "input": {},
+      "tags": {
+        "categories": null,
+        "persons": null,
+        "locations": null,
+        "cities": null,
+        "countries": null,
+        "organizations": null,
+        "sentiments": null,
+        "langs": null,
+        "sentimentScore": 0
+      },
+      "session": {
+        "assignedToDept": null,
+        "assignedToAgent": null,
+        "sessionId": "67c562e0a778a10001400ae7",
+        "routingId": "67c562e0a778a10001400ae7_rag_pipeline_1jh8vapvivcym"
+      },
+      "originalMessage": null,
+      "from": "9702875353",
+      "id": "67c57378a778a10001400af8"
+    }
+  ]
+}

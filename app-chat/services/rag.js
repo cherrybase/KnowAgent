@@ -2,6 +2,7 @@ const { MetricType } = require("@zilliz/milvus2-sdk-node");
 const { vectorDb } = require("./../models/milvus")
 const { generateEmbeddingOpenAi , generateEmbeddingAllMini } = require("./gpt");
 const { getExeTime } = require("./util");
+const { rephraseWithContext } = require("./webChat");
 async function loadDb(){
   await vectorDb.loadCollection({
     collection_name: "qaSchema"
@@ -46,13 +47,13 @@ async function semanticSearch(collectionName, embedding,output_fields,field_name
  * @param {string} collectionName - Name of the Milvus collection
  * @returns {Promise<Array>} - Top matching context documents
  */
-async function performRagopenAi(userQuestion, collectionName) {
+async function performRagopenAi(userQuestion, collectionName, contactId) {
   try {
     // 1. Generate embedding for the user question
     let start = Date.now();
     console.log("Generating embedding for user question...");
-    
-    const questionEmbedding = await generateEmbeddingOpenAi(userQuestion);
+    const rephrasedQuestion = await rephraseWithContext(contactId,userQuestion);
+    const questionEmbedding = await generateEmbeddingOpenAi(rephrasedQuestion);
     
     // 2. Perform semantic search to find similar questions
     console.log("Performing semantic search...");
@@ -67,7 +68,7 @@ async function performRagopenAi(userQuestion, collectionName) {
     
     console.log(`Found ${topMatches.length} relevant matches`);
     await getExeTime("RagOpenAi",start);
-    return topMatches;
+    return { topMatches , rephrasedQuestion };
                 
     // The caller can then pass these top matches to their fine-tuned model
   } catch (error) {
@@ -75,12 +76,12 @@ async function performRagopenAi(userQuestion, collectionName) {
     throw error;
   }
 }
-async function performRagAllMini(userQuestion,collectionName) {
+async function performRagAllMini(userQuestion,collectionName, contactId) {
   try {
     // 1. Generate embedding for the user question
     let start = Date.now();
     console.log("Generating embedding for user question...");
-    
+    const rephrasedQuestion = await rephraseWithContext(contactId,userQuestion);
     const questionEmbedding = await generateEmbeddingAllMini(userQuestion);
     
     // 2. Perform semantic search to find similar questions
@@ -96,7 +97,7 @@ async function performRagAllMini(userQuestion,collectionName) {
     
     console.log(`Found ${topMatches.length} relevant matches`);
     await getExeTime("RagAllMini",start);
-    return topMatches;
+    return { topMatches , rephrasedQuestion };
                 
     // The caller can then pass these top matches to their fine-tuned model
   } catch (error) {

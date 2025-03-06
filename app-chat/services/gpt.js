@@ -39,14 +39,8 @@ async function generateEmbeddingOpenAi(text, dims = 512) {
 
 
 
-async function getModelResponse(topMatches, userQuestion, isOpenAi) {
+async function getModelResponse(relevantInfo, userQuestion, rephrasedQuestion, isOpenAi) {
   let start = Date.now();
-
-  let relevantInfo = "";
-  for (let i = 0; i < topMatches.length; i++) {
-    const newInfo = isOpenAi ? `${i + 1}. Question : ${topMatches[i].question} \n Answer : ${topMatches[i].answer} \n` : `${i+1}. ${topMatches[i].knowledgebase} \n`
-    relevantInfo += newInfo;
-  }
   const systemPrompt = `You are Question and answer bot for al mulla exchange. \n NEVER invent details. \n
   Please use the following relevant information to help answer the user's question:
   <Relevant Info> \n
@@ -57,11 +51,13 @@ async function getModelResponse(topMatches, userQuestion, isOpenAi) {
     For more information, please contact us on 1840123 . \n 
     You can reach out to us on email: Help@almullaexchange.com .\n 
   <Contact Info>`;
+  console.log(`SYStem prompt : ${systemPrompt}`);
+  console.log(`user prompt  : ${rephrasedQuestion}`)
   const completion = await openai.chat.completions.create({
     model: "ft:gpt-4o-mini-2024-07-18:personal:remittance-bot-v2:B4QmFVQU",
     messages: [
       { role: "system", content: systemPrompt },
-      { role: "user", content: `User Question : ${userQuestion} \n If information provided in relevant info section isnt about country mentioned in users question. Respond saying <Insert service or information user is asking for> isnt provided by Al Mulla Exchange. Then attach entirity of contact info section.\n 
+      { role: "user", content: `User Question : ${rephrasedQuestion} \n If information provided in relevant info section isnt about country mentioned in users question. Respond saying <Insert service or information user is asking for> isnt provided by Al Mulla Exchange. Then attach entirity of contact info section.\n 
       \n Maintain context of user question while you respond` },
     ],
   });
