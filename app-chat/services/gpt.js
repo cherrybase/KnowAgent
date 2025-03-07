@@ -37,38 +37,64 @@ async function generateEmbeddingOpenAi(text, dims = 512) {
   }
 }
 
+async function information_not_available(){
+  return `Information you are asking for is not available currently.
+  For more information: You can WhatsApp or Call us: +965 1840 123. 
+  For more information, please contact us on 1840123 . 
+  You can reach out to us on email: Help@almullaexchange.com .`
+}
 
-
-async function getModelResponse(topMatches, userQuestion, isOpenAi) {
+async function getModelResponse(relevantInfo, userQuestion, rephrasedQuestion, isOpenAi) {
   let start = Date.now();
-
-  let relevantInfo = "";
-  for (let i = 0; i < topMatches.length; i++) {
-    const newInfo = isOpenAi ? `${i + 1}. Question : ${topMatches[i].question} \n Answer : ${topMatches[i].answer} \n` : `${i+1}. ${topMatches[i].knowledgebase} \n`
-    relevantInfo += newInfo;
-  }
   const systemPrompt = `You are Question and answer bot for al mulla exchange. \n NEVER invent details. \n
   Please use the following relevant information to help answer the user's question:
   <Relevant Info> \n
   ${relevantInfo} \n
   <Relevant Info> \n 
-  <Contact Info> \n
-    For more information: You can WhatsApp or Call us: +965 1840 123. \n 
-    For more information, please contact us on 1840123 . \n 
-    You can reach out to us on email: Help@almullaexchange.com .\n 
-  <Contact Info>`;
+  Send the complete answer section for appropriate question.`;
+  console.log(`SYStem prompt : ${systemPrompt}`);
+  console.log(`user prompt  : ${rephrasedQuestion}`)
   const completion = await openai.chat.completions.create({
     model: "ft:gpt-4o-mini-2024-07-18:personal:remittance-bot-v2:B4QmFVQU",
     messages: [
       { role: "system", content: systemPrompt },
-      { role: "user", content: `User Question : ${userQuestion} \n If information provided in relevant info section isnt about country mentioned in users question. Respond saying <Insert service or information user is asking for> isnt provided by Al Mulla Exchange. Then attach entirity of contact info section.\n 
-      \n Maintain context of user question while you respond` },
+      { role: "user", content: `User Question : ${rephrasedQuestion} 
+      If information provided in relevant info section is relevant to user question then generate a answer based upon relevant information, otherwise call the information_not_available() function provided in tools. 
+      Maintain context of user question while you respond` },
     ],
+    tools: [
+      {
+        type: "function",
+        function: {
+          name: "information_not_available",
+          description: "Generates a default information_not_available message",
+          parameters: {
+            type: "object",
+            properties: {
+            },
+            required: [],
+            additionalProperties: false,
+          },
+          strict: true,
+        },
+      },
+    ],
+    tool_choice : "auto"
   });
-  console.log(completion.usage);
-  console.log(`answer final : ${completion.choices[0].message.content}`);
+  console.log(`answer final content : ${completion.choices[0].message.content}`);
+  // console.log(`answer final func : ${completion.choices[0].message.tool_calls[0].function.name || null}`);
+
+  if(completion.choices[0].message.content === null) {
+    const ans = await information_not_available();
+    console.log(completion.usage);
+    await getExeTime("GPT", start);  
+    return ans
+  } 
+  
+  
   await getExeTime("GPT", start);
   return completion.choices[0].message.content;
+  
 }
 
 module.exports = { generateEmbeddingOpenAi , generateEmbeddingAllMini , getModelResponse };

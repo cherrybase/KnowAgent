@@ -2,7 +2,7 @@ const { DataType, MetricType, IndexType } = require("@zilliz/milvus2-sdk-node");
 const fs = require("fs");
 const readline = require("readline");
 const { vectorDb } = require("./app/models/milvus");
-
+const { client } = require("./app-chat/models/redis");
 
 
 // Example usage:
@@ -70,9 +70,12 @@ async function main() {
   const jsonlFilePath = './embeddingTest.jsonl'; // Replace with your JSONL file path
   // const data = await getData(jsonlFilePath);
   // console.log('data:', data); // Use console.log with an object rather than string interpolation.
-  await createCollection(collectionName);
+  // await createCollection(collectionName);
   // await insertData(collectionName,jsonlFilePath);
   // console.log(JSON.stringify(await vectorDb.describeCollection({ collection_name : collectionName })));
+  await client.set('name', 'kedar');
+  const value = await client.get('name');
+  console.log(`name : ${value}`)
 }
 
 main(); // Call the async main function
