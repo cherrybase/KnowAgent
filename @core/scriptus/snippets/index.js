@@ -1,6 +1,6 @@
 const fs = require("fs");
 const path = require("path");
-const coreutils = require("../utils/coreutils");
+const coreutils = require("../../utils/coreutils");
 
 const ROOT_DIR = null; //path.resolve(__dirname);
 const STORE = {};
@@ -40,6 +40,8 @@ const readSnippets = function ({ snippetsDir }) {
  */
 Snippets.load = function ({ root = ROOT_DIR, dir, snippetsDir }) {
   try {
+    readSnippets({ snippetsDir: path.resolve(__dirname, "./") });
+
     if (!root) {
       root = coreutils.getCallerDir();
     }

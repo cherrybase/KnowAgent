@@ -14,7 +14,7 @@ export default class InboundQueue {
   async execute({ task, queue }) {
     const contact_id = queue;
     new ChatBox({
-      message: new MessageBoxCWC({ message: task, contact_id }),
+      messagebox: new MessageBoxCWC({ message: task, contact_id }),
     }).execute();
   }
 }

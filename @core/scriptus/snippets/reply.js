@@ -1,5 +1,3 @@
-import { redis, RQueue, waitForReady } from "@bootloader/redison";
-
 module.exports = function (
   $,
   {
@@ -17,6 +15,7 @@ module.exports = function (
     inbound,
     execute,
     has,
+    messagebox,
   }
 ) {
   class ReplyPromise extends Promise {
@@ -33,7 +32,7 @@ module.exports = function (
     reply(options) {
       return new ReplyPromise((resolve) => {
         console.log(`To(${contact_id}) Sending:`, options);
-        RQueue({ key: contact_id }).push(options);
+        messagebox.sendMessage(options);
         resolve(options);
       });
     }

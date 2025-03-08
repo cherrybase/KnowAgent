@@ -8,8 +8,8 @@ const { cachebox } = require("@bootloader/redison");
 
 const ROOT_DIR = null; //path.resolve(__dirname);
 
-function ChatBox({ isSessionStart, isSessionRouted, handler = [], message }) {
-  const context = message.toContext();
+function ChatBox({ isSessionStart, isSessionRouted, handler = [], messagebox }) {
+  const context = messagebox.toContext();
   context.domain = context.tnt || context.domain;
   context.tnt = context.domain;
   const { appCode, app_id, contact_id, session_id, meta, server, tnt, domain, inbound } = context;
@@ -39,6 +39,7 @@ function ChatBox({ isSessionStart, isSessionRouted, handler = [], message }) {
         context: session_id,
         ttl: 60 * 60 * 24 * 3,
       }),
+      messagebox: messagebox,
       has: sb.has,
       hasFunction: sb.hasFunction,
       execute: sb.execute,
