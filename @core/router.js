@@ -19,6 +19,10 @@ function toArray(value) {
   return Array.isArray(value) ? value : [value];
 }
 
+function getRouteSpecificity(route) {
+  return route.split("/").filter((p) => p && !p.startsWith(":")).length;
+}
+
 // Middleware wrapper
 function wrapMiddleware(middleware, status = 400, message = "Bad request") {
   return async (req, res, next) => {
@@ -85,31 +89,44 @@ export function loadApp({ name = "default", context = "", app, prefix = "" }) {
 
   let swaggerPaths = {};
 
+  let controllers = [];
   for (const file of controllerFiles) {
     const { default: ControllerClass } = require(join(controllersPath, file));
-
     if (!ControllerClass) continue;
-
     console.log("ControllerClass", ControllerClass.name);
-
     // Get the last registered controller from the decorators system
-    //let controller = decorators.mappings.controller[decorators.mappings.controller.length - 1];
     let controller = decorators.mappings.controller.find(ControllerClass);
-
     if (!controller) continue;
+    controllers.push({ controller, ControllerClass });
+  }
 
+  controllers = controllers
+    .map(function (c) {
+      c.controller._ = c.controller._ || {};
+      c.controller._.full_path = normalizePath(`/${prefix}/${c.controller.meta.path}`);
+      c.controller._.routeSpecificity = getRouteSpecificity(c.controller._.full_path);
+      return c;
+    })
+    .sort((a, b) => b.controller._.routeSpecificity - a.controller._.routeSpecificity);
+
+  for (const { controller, ControllerClass } of controllers) {
     if (!controller._routed) {
       controller._routed = true;
       let cTarget = new ControllerClass();
 
-      controller.maps.map(function(map){
-        ///console.log("controller.maps",map,cTarget[map.meta.name]?.toString())
-      })
+      let controllerMaps = controller.maps
+        .map(function (map) {
+          map._ = map._ || {};
+          map._.full_path = normalizePath(`/${prefix}/${controller.meta.path}/${map.meta.path}`);
+          map._.routeSpecificity = getRouteSpecificity(map._.full_path);
+          return map;
+        })
+        .sort((a, b) => b._.routeSpecificity - a._.routeSpecificity);
 
       // Iterate over controller mappings and set up routes
-      for (let { meta, context } of controller.maps) {
+      for (let { _, meta, context } of controllerMaps) {
         const { path, method, handler, responseType, name, auth, middleware, debug } = meta;
-        let full_path = normalizePath(`/${prefix}/${controller.meta.path}/${path}`);
+        let full_path = _.full_path; //normalizePath(`/${prefix}/${controller.meta.path}/${path}`);
         console.log(`@RequestMappings:${method}:/${full_path} ${auth ? "-" : "="}> ${name}`);
 
         let additionalMiddlewares =
@@ -129,7 +146,7 @@ export function loadApp({ name = "default", context = "", app, prefix = "" }) {
             let CONST = {};
             // Call the route handler with necessary context
             let callerMethod = handler; //cTarget[name];//|| context.access.get(cTarget) || handler;
-            if(debug) console.log(`${method.toUpperCase()} : ${full_path}`,name)
+            if (debug) console.log(`${method.toUpperCase()} : ${full_path}`, name);
             const result = await callerMethod.call(cTarget, {
               request: req,
               response: res,
@@ -161,7 +178,7 @@ export function loadApp({ name = "default", context = "", app, prefix = "" }) {
               //console.log("result",result)
               res.json(result);
             } else {
-              console.log("No Response")
+              console.log("No Response");
             }
           } catch (err) {
             console.error(err);
@@ -194,7 +211,7 @@ export function loadApp({ name = "default", context = "", app, prefix = "" }) {
       version: "1.0.0",
       description: "Auto-generated API documentation using Swagger",
     },
-    servers: [{ url: `${normalizePath(context).trim('/')}` }],
+    servers: [{ url: `${normalizePath(context).trim("/")}` }],
     paths: swaggerPaths,
   };
 

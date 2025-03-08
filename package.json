@@ -38,7 +38,8 @@
     "sharp": "^0.33.5",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
-    "node-fetch": "^2.6.1"
+    "node-fetch": "^2.6.1",
+    "abort-controller": "^3.0.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.26.4",
