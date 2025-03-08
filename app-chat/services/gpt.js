@@ -46,21 +46,31 @@ async function information_not_available(){
 
 async function getModelResponse(relevantInfo, userQuestion, rephrasedQuestion, isOpenAi) {
   let start = Date.now();
-  const systemPrompt = `You are Question and answer bot for al mulla exchange. \n NEVER invent details. \n
-  Please use the following relevant information to help answer the user's question:
-  <Relevant Info> \n
-  ${relevantInfo} \n
-  <Relevant Info> \n 
-  Send the complete answer section for appropriate question.`;
+  const systemPrompt = `
+You are an AI assistant for Al Mulla Exchange.
+Answer the user's question using only the provided information.
+If the information indirectly answers the question, still answer.
+If the information is insufficient, trigger information_not_available().
+Never invent information.
+`;
+  const userPrompt = `
+### Relevant Information
+${relevantInfo}
+
+### User Question
+${rephrasedQuestion}
+
+Answer the question using the information provided.
+If the information is insufficient, trigger information_not_available().
+Prefer answering if the meaning is clear, even if wording differs.
+`;
   console.log(`SYStem prompt : ${systemPrompt}`);
-  console.log(`user prompt  : ${rephrasedQuestion}`)
+  console.log(`user prompt  : ${userPrompt}`)
   const completion = await openai.chat.completions.create({
     model: "ft:gpt-4o-mini-2024-07-18:personal:remittance-bot-v2:B4QmFVQU",
     messages: [
       { role: "system", content: systemPrompt },
-      { role: "user", content: `User Question : ${rephrasedQuestion} 
-      If information provided in relevant info section is relevant to user question then generate a answer based upon relevant information, otherwise call the information_not_available() function provided in tools. 
-      Maintain context of user question while you respond` },
+      { role: "user", content: userPrompt },
     ],
     tools: [
       {
@@ -91,7 +101,7 @@ async function getModelResponse(relevantInfo, userQuestion, rephrasedQuestion, i
     return ans
   } 
   
-  
+  console.log(completion.usage);
   await getExeTime("GPT", start);
   return completion.choices[0].message.content;
   
