@@ -1,6 +1,13 @@
-const scriptbox = require("./scriptbox");
-const snippets = require("./snippets");
+const ScriptBox = require("./scriptbox");
+const Snippets = require("./snippets");
+const MessageBox = require("./messagebox");
+const MessageBoxCWC = require("./messageboxcwc");
+const ChatBox = require("./chatbox");
 
 module.exports = {
-  scriptbox, snippets
+  ScriptBox,
+  Snippets,
+  MessageBox,
+  MessageBoxCWC,
+  ChatBox,
 };

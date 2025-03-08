@@ -1,17 +1,15 @@
 const fs = require("fs");
 const path = require("path");
+const coreutils = require("../utils/coreutils");
 
-const ROOT_DIR = path.resolve(__dirname);
+const ROOT_DIR = null; //path.resolve(__dirname);
 const STORE = {};
 
-function Snippets(scriptbox) {
+function Snippets(context) {
+  let $ = this;
   this.context = function (context) {
-    let $ = {};
     let _context = {
       ...context,
-      has: scriptbox.has,
-      hasFunction: scriptbox.hasFunction,
-      setting: scriptbox.setting,
     };
     Object.keys(STORE).map(function (name) {
       let snippet = STORE[name];
@@ -19,15 +17,18 @@ function Snippets(scriptbox) {
     });
     return $;
   };
+  if (context) this.context(context);
 }
 
-const readSnippets = function ({ scriptsDir }) {
-  if (!scriptsDir) return;
-  const filenames = fs.readdirSync(scriptsDir);
+const readSnippets = function ({ snippetsDir }) {
+  if (!snippetsDir) return;
+  coreutils.log("snippets from ", snippetsDir);
+  const filenames = fs.readdirSync(snippetsDir);
   filenames.forEach((filename) => {
     if (filename !== "index.js") {
-      const { default: snippet } = require(join(scriptsDir, filename));
+      let snippet = require(path.join(snippetsDir, filename));
       STORE[filename.split(".")[0]] = snippet;
+      //console.log("Loaded snippet", snippet);
     }
   });
 };
@@ -37,10 +38,13 @@ const readSnippets = function ({ scriptsDir }) {
  * @param {*} { root="Root directory", dir="relative path to scripts directory", scriptsDir="absolute path to scripts directory"}
  * @returns
  */
-Snippets.load = function ({ root = ROOT_DIR, dir, scriptsDir }) {
+Snippets.load = function ({ root = ROOT_DIR, dir, snippetsDir }) {
   try {
-    if (!scriptsDir) scriptsDir = path.resolve(root, dir);
-    readSnippets({ scriptsDir });
+    if (!root) {
+      root = coreutils.getCallerDir();
+    }
+    if (!snippetsDir) snippetsDir = path.resolve(root, dir);
+    readSnippets({ snippetsDir });
   } catch (error) {
     console.error("Failed to read scripts", error);
   } finally {

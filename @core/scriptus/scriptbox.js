@@ -1,7 +1,9 @@
 const fs = require("fs");
 const path = require("path");
+const coreutils = require("../utils/coreutils");
+var vm = require("vm");
 
-const ROOT_DIR = path.resolve(__dirname);
+const ROOT_DIR = null; //path.resolve(__dirname);
 const STORE = {};
 
 function ScriptBox({ name, code, load }) {
@@ -21,6 +23,11 @@ function ScriptBox({ name, code, load }) {
 
   var VM;
 
+  this.context = function (context) {
+    VM = context;
+    return this;
+  };
+
   this.execute = function (method, ...args) {
     return VM[method](...args);
   };
@@ -37,21 +44,23 @@ function ScriptBox({ name, code, load }) {
     return VM[key];
   };
 
-  this.run = function ({ contextName, timeout = 10 }) {
+  this.run = function ({ contextName, timeout = 10000 }) {
     script.runInNewContext(VM, {
       contextName: contextName,
-      timeout: timeout, // default : 10 seconds
+      timeout: timeout, // default : 10000 milliseconds
     });
   };
 }
 
 const readFiles = function ({ scriptsDir }) {
   if (!scriptsDir) return;
+  coreutils.log("scripts from ", scriptsDir);
   const filenames = fs.readdirSync(scriptsDir);
   filenames.forEach((filename) => {
     if (filename !== "index.js") {
       const content = fs.readFileSync(`${scriptsDir}/${filename}`, "utf-8");
       STORE[filename.split(".")[0]] = content;
+      //console.log("Loaded script", filename);
     }
   });
 };
@@ -63,6 +72,9 @@ const readFiles = function ({ scriptsDir }) {
  */
 ScriptBox.load = function ({ root = ROOT_DIR, dir, scriptsDir }) {
   try {
+    if (!root) {
+      root = coreutils.getCallerDir();
+    }
     if (!scriptsDir) scriptsDir = path.resolve(root, dir);
     readFiles({ scriptsDir });
   } catch (error) {

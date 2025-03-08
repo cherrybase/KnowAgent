@@ -1,28 +1,54 @@
-const utils = require('../utils');
-const xms = require('./xms');
-const Handlebars = require("handlebars");
-const config = require("config");
+import { redis, RQueue, waitForReady } from "@bootloader/redison";
 
-module.exports = function($,{ 
-    meta,server,tnt, app_id, appCode, domain,
-    contact_id, channel_id, session_id, routing_id,
-    session, inbound, 
-    execute, has }) {
+module.exports = function (
+  $,
+  {
+    meta,
+    server,
+    tnt,
+    app_id,
+    appCode,
+    domain,
+    contact_id,
+    channel_id,
+    session_id,
+    routing_id,
+    session,
+    inbound,
+    execute,
+    has,
+  }
+) {
+  class ReplyPromise extends Promise {
+    constructor(executor = (resolve) => resolve()) {
+      let resolver;
+      super((resolve, reject) => {
+        resolver = resolve;
+        executor(resolve, reject);
+      });
+      this.resolver = resolver;
+      this.data = null;
+    }
 
-    const reply = async function(options){
-      
-    };
+    reply(options) {
+      return new ReplyPromise((resolve) => {
+        console.log(`To(${contact_id}) Sending:`, options);
+        RQueue({ key: contact_id }).push(options);
+        resolve(options);
+      });
+    }
 
+    listen(options) {
+      return new ReplyPromise((resolve) => {
+        setTimeout(() => {
+          console.log("Listing Options:", options);
+          resolve(options);
+        }, 1000);
+      });
+    }
+  }
 
-    reply.handle = function(){
-        var handler = session.handler.pop();                    
-        var handlerName = handler.name;
-        //console.log("handler",handler);
-        if(handlerName){
-            return execute(handlerName);
-        } else if(handler && handler.type == 'options'){
-            return $.listen_handle(handler)
-        }
-    };
-
+  return function (options) {
+    return new ReplyPromise().reply(options);
+  };
 };

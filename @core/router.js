@@ -6,7 +6,7 @@ import config from "@bootloader/config";
 
 import swaggerJsdoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
-import coreutils from "./coreutils";
+import coreutils from "./utils/coreutils";
 
 /**
  * Normalize a given path by removing duplicate slashes and trailing slashes.
@@ -102,13 +102,13 @@ export function loadApp({ name = "default", context = "", app, prefix = "" }) {
       controller._routed = true;
       let cTarget = new ControllerClass();
 
-      // controller.maps.map(function(map){
-      //   console.log("controller.maps",map,map.handler)
-      // })
+      controller.maps.map(function(map){
+        ///console.log("controller.maps",map,cTarget[map.meta.name]?.toString())
+      })
 
       // Iterate over controller mappings and set up routes
-      for (const { meta } of controller.maps) {
-        const { path, method, handler, responseType, name, auth, middleware } = meta;
+      for (let { meta, context } of controller.maps) {
+        const { path, method, handler, responseType, name, auth, middleware, debug } = meta;
         let full_path = normalizePath(`/${prefix}/${controller.meta.path}/${path}`);
         console.log(`@RequestMappings:${method}:/${full_path} ${auth ? "-" : "="}> ${name}`);
 
@@ -128,14 +128,15 @@ export function loadApp({ name = "default", context = "", app, prefix = "" }) {
             const model = {};
             let CONST = {};
             // Call the route handler with necessary context
-            //console.log(`${method} : ${full_path}`,cTarget,name,req.body)
-            const result = await handler.call(cTarget, {
+            let callerMethod = handler; //cTarget[name];//|| context.access.get(cTarget) || handler;
+            if(debug) console.log(`${method.toUpperCase()} : ${full_path}`,name)
+            const result = await callerMethod.call(cTarget, {
               request: req,
               response: res,
               model,
               CONST,
             });
-
+            //console.log(`${method}responseType`,responseType,result)
             // Handle different response types (view rendering or JSON response)
             if (responseType === "view" || (!responseType && typeof result === "string")) {
               // Define global constants for the app
@@ -157,7 +158,10 @@ export function loadApp({ name = "default", context = "", app, prefix = "" }) {
                 CONST_SCRIPT: "window.CONST=" + JSON.stringify(CONST),
               });
             } else if (responseType === "json" || !responseType) {
+              //console.log("result",result)
               res.json(result);
+            } else {
+              console.log("No Response")
             }
           } catch (err) {
             console.error(err);
