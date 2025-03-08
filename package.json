@@ -51,5 +51,8 @@
     "@babel/register": "^7.25.9",
     "nodemon": "^3.1.0",
     "redis-memory-server": "^0.12.1"
+  },
+  "optionalDependencies": {
+    "@redis/server": "*"
   }
 }
