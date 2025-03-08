@@ -37,8 +37,7 @@
     "openai": "^4.85.4",
     "sharp": "^0.33.5",
     "swagger-jsdoc": "^6.2.8",
-    "swagger-ui-express": "^5.0.1",
-    "node-fetch": "^2.6.1"
+    "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
     "@babel/cli": "^7.26.4",
