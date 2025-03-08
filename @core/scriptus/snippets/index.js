@@ -22,6 +22,10 @@ function Snippets(context) {
 
 const readSnippets = function ({ snippetsDir }) {
   if (!snippetsDir) return;
+  if (!fs.existsSync(snippetsDir)) {
+    console.warn(`Warning: Directory "${snippetsDir}" does not exist.`);
+    return;
+  }
   coreutils.log("snippets from ", snippetsDir);
   const filenames = fs.readdirSync(snippetsDir);
   filenames.forEach((filename) => {

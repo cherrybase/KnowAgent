@@ -54,6 +54,12 @@ function ScriptBox({ name, code, load }) {
 
 const readFiles = function ({ scriptsDir }) {
   if (!scriptsDir) return;
+
+  if (!fs.existsSync(scriptsDir)) {
+    console.warn(`Warning: Directory "${scriptsDir}" does not exist.`);
+    return;
+  }
+
   coreutils.log("scripts from ", scriptsDir);
   const filenames = fs.readdirSync(scriptsDir);
   filenames.forEach((filename) => {
