@@ -30,7 +30,7 @@ npm run dev #with dev mode
 #or
 npm run babel #with babel
 #or
-npm run nodmon #with babel and nodemon
+npm run nodemon #with babel and nodemon
 #or
 npm run ngrok #with babel,nodemon, ngork (credentials required)
 
