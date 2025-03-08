@@ -46,12 +46,18 @@ This compiles the source code and runs the optimized server.
 
 ## Project Structure
 ```
-boot-node/
+boot-express/
+├── @core/              # Core Libraries
+├── @common/            # Common Libraries
 ├── app/
 │   ├── controllers/    # Route handlers (decorator-based)
+│   ├── middlewares/    # Middleware for requests
 │   ├── services/       # Business logic services
 │   ├── views/          # EJS templates
 │   └── models/         # Database models
+│   ├── workers/        # Workers/Jobs/EventListners. Queue Handlers
+│   └── scripts/        # Bot Scripts
+│   └── snippets/        # Bot Snippets
 │   └── app.js         # Database models
 ├── dist/               # Compiled output (production build)
 ├── babel.config.js     # Babel configuration
