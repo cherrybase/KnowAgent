@@ -23,7 +23,7 @@
     "@bootloader/core": "^0.0.7",
     "@bootloader/local": "^1.0.0",
     "@bootloader/mongon": "^1.1.8",
-    "@bootloader/redison": "^1.1.4",
+    "@bootloader/redison": "^1.1.5",
     "@huggingface/transformers": "^3.3.3",
     "@zilliz/milvus2-sdk-node": "^2.4.9",
     "body-parser": "^1.19.0",
@@ -53,6 +53,7 @@
     "redis-memory-server": "^0.12.1"
   },
   "optionalDependencies": {
-    "redis-server": "*"
+    "redis-server": "1.2.2",
+    "redis-memory-server": "0.12.1"
   }
 }

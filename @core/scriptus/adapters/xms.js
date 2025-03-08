@@ -1,4 +1,4 @@
-function MessageBox({ message: messageBody }) {
+function XMSAdapeter({ message: messageBody }) {
   this.toContext = function () {
     var context = {
       meta: messageBody.meta,
@@ -69,4 +69,4 @@ function MessageBox({ message: messageBody }) {
     return context;
   };
 }
-module.exports = MessageBox;
+module.exports = XMSAdapeter;

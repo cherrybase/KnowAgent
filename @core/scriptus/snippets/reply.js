@@ -15,7 +15,7 @@ module.exports = function (
     inbound,
     execute,
     has,
-    messagebox,
+    adapter,
   }
 ) {
   class ReplyPromise extends Promise {
@@ -32,7 +32,7 @@ module.exports = function (
     reply(options) {
       return new ReplyPromise((resolve) => {
         console.log(`To(${contact_id}) Sending:`, options);
-        messagebox.sendMessage(options);
+        adapter.sendMessage(options);
         resolve(options);
       });
     }

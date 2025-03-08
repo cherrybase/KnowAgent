@@ -1,6 +1,6 @@
 import { redis, RQueue, waitForReady } from "@bootloader/redison";
 
-function MessageBoxCWC({ message, contact_id, sessionId }) {
+function LocalAdapeter({ message, contact_id, sessionId }) {
   //{ author: "Bot", type: "text", data: { text: `Response(${$.inbound.data.text})` }
 
   this.toContext = function () {
@@ -77,4 +77,4 @@ function MessageBoxCWC({ message, contact_id, sessionId }) {
     RQueue({ key: contact_id }).push({ author: "Bot", type: "text", data: { text: options } });
   };
 }
-module.exports = MessageBoxCWC;
+module.exports = LocalAdapeter;
