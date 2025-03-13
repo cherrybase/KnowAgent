@@ -65,6 +65,10 @@ async function insertData(collectionName,path){
   });
   console.log(`Data inserted into collection.`);
 }
+async function getCollections() {
+  const res = await vectorDb.listCollections();
+  console.log(res);
+}
 async function main() {
   const collectionName = "qaSchema";
   const jsonlFilePath = './embeddingTest.jsonl'; // Replace with your JSONL file path
@@ -73,9 +77,10 @@ async function main() {
   // await createCollection(collectionName);
   // await insertData(collectionName,jsonlFilePath);
   // console.log(JSON.stringify(await vectorDb.describeCollection({ collection_name : collectionName })));
-  await client.set('name', 'kedar');
-  const value = await client.get('name');
-  console.log(`name : ${value}`)
+  // await client.set('name', 'kedar');
+  // const value = await client.get('name');
+  // console.log(`name : ${value}`)
+  await getCollections();
 }
 
 main(); // Call the async main function
