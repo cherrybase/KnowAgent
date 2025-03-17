@@ -3,7 +3,7 @@ const http = require("http");
 
 const { loadApp } = require("./router");
 const { initJobs } = require("./jobs");
-const coreutils = require("./coreutils");
+const coreutils = require("./utils/coreutils");
 
 const DEFAULT_APP = 'default'
 const APP = process.env.APP || DEFAULT_APP;

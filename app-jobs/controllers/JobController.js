@@ -1,6 +1,8 @@
 import { Controller, RequestMapping, ResponseBody, ResponseView, AuthRequired } from "@bootloader/core/decorators";
 
-@Controller({ path: "/users", middleware: "ClassLevelMiddleware" })
+import SendCampaignJob from "../workers/SendCampaign";
+
+@Controller({ path: "/", middleware: "ClassLevelMiddleware" })
 export default class UserController {
   constructor() {
     console.log("===UserController instantiated:", this.constructor);
@@ -27,9 +29,18 @@ export default class UserController {
   }
 
   @ResponseBody
-  @RequestMapping({ path: "/job", method: "get" })
+  @RequestMapping({ path: "/add_job", method: "get" })
   async pushJob() {
     let data = { id: 1, name: "John Doe", time: Date.now() };
+    SendCampaignJob.addJob(data);
+    return [data];
+  }
+
+  @ResponseBody
+  @RequestMapping({ path: "/queue_task", method: "get" })
+  async queueJob() {
+    let data = { id: 1, name: "John Doe", time: Date.now() };
+    SendCampaignJob.queueTask(data);
     return [data];
   }
 }

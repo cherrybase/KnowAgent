@@ -1,6 +1,6 @@
-# BootNode
+# BootExpress
 
-BootNode is a lightweight, Spring Boot-inspired Node.js framework that simplifies backend development with decorators, modular routing, and built-in support for dependency injection. It is designed to provide an intuitive structure for building scalable web applications using Express and Babel.
+BootExpress is a lightweight, Spring Boot-inspired Node.js framework that simplifies backend development with decorators, modular routing, and built-in support for dependency injection. It is designed to provide an intuitive structure for building scalable web applications using Express and Babel.
 
 ## Features
 
@@ -30,7 +30,7 @@ npm run dev #with dev mode
 #or
 npm run babel #with babel
 #or
-npm run nodmon #with babel and nodemon
+npm run nodemon #with babel and nodemon
 #or
 npm run ngrok #with babel,nodemon, ngork (credentials required)
 
@@ -46,12 +46,18 @@ This compiles the source code and runs the optimized server.
 
 ## Project Structure
 ```
-boot-node/
+boot-express/
+├── @core/              # Core Libraries
+├── @common/            # Common Libraries
 ├── app/
 │   ├── controllers/    # Route handlers (decorator-based)
+│   ├── middlewares/    # Middleware for requests
 │   ├── services/       # Business logic services
 │   ├── views/          # EJS templates
 │   └── models/         # Database models
+│   ├── workers/        # Workers/Jobs/EventListners. Queue Handlers
+│   └── scripts/        # Bot Scripts
+│   └── snippets/        # Bot Snippets
 │   └── app.js         # Database models
 ├── dist/               # Compiled output (production build)
 ├── babel.config.js     # Babel configuration
