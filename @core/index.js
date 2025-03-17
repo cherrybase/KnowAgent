@@ -5,8 +5,13 @@ const { loadApp } = require("./router");
 const { initJobs } = require("./jobs");
 const coreutils = require("./utils/coreutils");
 
-const DEFAULT_APP = 'default'
-const APP = process.env.APP || DEFAULT_APP;
+const DEFAULT_APP = "default";
+const APP = (function (app) {
+  if (app.indexOf("app-") >= 0) {
+    return app.replace("app-", "");
+  }
+  return app;
+})(process.env.APP || DEFAULT_APP);
 
 function BootLoader(...args) {
   let mappings = [];

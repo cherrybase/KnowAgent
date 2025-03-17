@@ -24,7 +24,7 @@ export default class ChatController {
       contact_id = crypto.randomUUID();
       response.cookie("contact_id", contact_id, { maxge: 900000, httpOnly: true });
     }
-    InboundQueue.queueTask(body, {
+    InboundQueue.task(body, {
       queue: contact_id,
     });
     return { results: [body] };

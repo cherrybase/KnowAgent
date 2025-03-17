@@ -25,10 +25,14 @@ async function request(url, method, headers, body) {
       body: body ? JSON.stringify(body) : undefined,
       signal: timer.signal,
     });
+    if (!response.ok) {
+      throw new Error(`Response status: ${response.status}`);
+    }
     clearTimeout(timer.timeout);
     return response;
   } catch (error) {
     console.error(`${method} Error:`, error);
+    throw error;
   }
 }
 

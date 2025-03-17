@@ -58,47 +58,55 @@ export function loadApp({ name = "default", context = "", app, prefix = "" }) {
   const appName = name;
   const appPath = ["default", "app"].indexOf(appName) >= 0 ? "app" : `app-${appName}`;
 
+  const appPaths = ["app"];
+  if (appPath !== appPaths[0]) {
+    appPaths.push(appPath);
+  }
+
   // Middleware to set the views directory for rendering templates
   router.use((req, res, next) => {
     //console.log("====SET VIEW");
-    res.app.set("views", join(process.cwd(), `${appPath}/views`));
+    res.app.set(
+      "views",
+      appPaths.map((_appPath) => join(process.cwd(), `${_appPath}/views`))
+    );
     next();
   });
 
-  // Load middlewares from the "middlewares" directory
-  const middlewaresPath = join(process.cwd(), `${appPath}/middlewares`);
-  let middlewaresFiles = [];
-  if (existsSync(middlewaresPath)) {
-    middlewaresFiles = readdirSync(middlewaresPath).filter((file) => file.endsWith(".js"));
-  }
-
   const middlewaresMap = {};
-  for (const file of middlewaresFiles) {
-    const { default: middleware } = require(join(middlewaresPath, file));
-
-    if (!middleware) continue;
-
-    // Use the filename (without extension) as the middleware key
-    let middlewareName = file.split(".").slice(0, -1).join(".");
-    middlewaresMap[middlewareName] = typeof middleware === "function" ? { middleware } : middleware;
-  }
-
-  // Load controllers from the "controllers" directory
-  const controllersPath = join(process.cwd(), `${appPath}/controllers`);
-  const controllerFiles = readdirSync(controllersPath).filter((file) => file.endsWith(".js"));
-
   let swaggerPaths = {};
-
   let controllers = [];
-  for (const file of controllerFiles) {
-    const { default: ControllerClass } = require(join(controllersPath, file));
-    if (!ControllerClass) continue;
-    console.log("ControllerClass", ControllerClass.name);
-    // Get the last registered controller from the decorators system
-    let controller = decorators.mappings.controller.find(ControllerClass);
-    if (!controller) continue;
-    controllers.push({ controller, ControllerClass });
-  }
+
+  appPaths.map(function (_appPath) {
+    // Load middlewares from the "middlewares" directory
+    const middlewaresPath = join(process.cwd(), `${_appPath}/middlewares`);
+    let middlewaresFiles = [];
+    if (existsSync(middlewaresPath)) {
+      middlewaresFiles = readdirSync(middlewaresPath).filter((file) => file.endsWith(".js"));
+    }
+    for (const file of middlewaresFiles) {
+      const { default: middleware } = require(join(middlewaresPath, file));
+      if (!middleware) continue;
+      // Use the filename (without extension) as the middleware key
+      let middlewareName = file.split(".").slice(0, -1).join(".");
+      middlewaresMap[middlewareName] = typeof middleware === "function" ? { middleware } : middleware;
+    }
+    // Load controllers from the "controllers" directory
+    const controllersPath = join(process.cwd(), `${_appPath}/controllers`);
+    const controllerFiles = readdirSync(controllersPath).filter((file) => file.endsWith(".js"));
+
+    let _controllers = [];
+    for (const file of controllerFiles) {
+      const { default: ControllerClass } = require(join(controllersPath, file));
+      if (!ControllerClass) continue;
+      console.log("ControllerClass", ControllerClass.name);
+      // Get the last registered controller from the decorators system
+      let controller = decorators.mappings.controller.find(ControllerClass);
+      if (!controller) continue;
+      _controllers.push({ controller, ControllerClass });
+    }
+    controllers = [...controllers, ..._controllers];
+  });
 
   controllers = controllers
     .map(function (c) {

@@ -16,13 +16,6 @@ export default class TestController {
   @ResponseBody
   @RequestMapping({ path: "/api/messages", method: "get" })
   async getMessage({ headers }) {
-    let keys = [];
-    let resp = await ajax("https://app.mehery.xyz/pub/amx/device").get({ key: "app.name" });
-
-    keys.push((await resp.json()).meta["app.name"]);
-
-    let resp2 = await ajax("https://app.mehery.xyz/pub/amx/device").get({ key: "app.name" }).json();
-    keys.push(resp2.meta["app.name"]);
     return [{ id: 1, keys: keys }];
   }
 

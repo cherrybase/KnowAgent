@@ -1,7 +1,7 @@
-const XMSAdapeter = require("./xms");
-const LocalAdapeter = require("./local");
+const XMSAdapter = require("./xms");
+const LocalAdapter = require("./local");
 
 module.exports = {
-  XMSAdapeter,
-  LocalAdapeter,
+  LocalAdapter,
+  XMSAdapter,
 };
