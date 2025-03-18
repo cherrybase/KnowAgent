@@ -8,8 +8,8 @@ const { cachebox } = require("@bootloader/redison");
 
 const ROOT_DIR = null; //path.resolve(__dirname);
 
-function ChatBox({ isSessionStart, isSessionRouted, handler = [], messagebox }) {
-  const context = messagebox.toContext();
+function ChatBox({ adapter }) {
+  const context = adapter.toContext();
   context.domain = context.tnt || context.domain;
   context.tnt = context.domain;
   const { appCode, app_id, contact_id, session_id, meta, server, tnt, domain, inbound } = context;
@@ -39,7 +39,7 @@ function ChatBox({ isSessionStart, isSessionRouted, handler = [], messagebox }) 
         context: session_id,
         ttl: 60 * 60 * 24 * 3,
       }),
-      messagebox: messagebox,
+      adapter: adapter,
       has: sb.has,
       hasFunction: sb.hasFunction,
       execute: sb.execute,
@@ -54,7 +54,7 @@ function ChatBox({ isSessionStart, isSessionRouted, handler = [], messagebox }) 
       // inputCode: inputCode,
       setTimeout: setTimeout,
       $: $,
-      console: console,
+      console: $.console,
 
       // setResolver: function (resolverName) {
       //   dbservice.setResolver(app_id, resolverName, contact_id, tnt);
@@ -77,6 +77,7 @@ function ChatBox({ isSessionStart, isSessionRouted, handler = [], messagebox }) 
       contextName: `${domain} ${app_id}`,
       timeout: 10000,
     });
+    this.$ = $;
     return sb;
   };
 
@@ -91,33 +92,14 @@ function ChatBox({ isSessionStart, isSessionRouted, handler = [], messagebox }) 
     let contact = botContext.contact;
 
     let diff = Date.now() - contact.session_timeStamp;
-    let handler = contact.nextHandler;
-
     if (diff > 1800000 || context.routing_id != contact.session?.routingId) {
-      handler = "";
-      // dbservice.clearResolver(contact_id);
+      //Clear Session as Session is Expired
       BotContextStore.clearSession(context);
       BotContextStore.clearUserData(context);
-      contact.session = {
-        promise: [],
-        handler: [],
-      };
+      contact.session = null;
       contact.userData = {};
     }
-    //<@Deprecated
-    // if (context.params != null) {
-    //   var userData = new Object();
-    //   for (const key of Object.keys(context.params)) {
-    //     userData.key = context.params[key];
-    //   }
-    //   if (context.params.lang != null) {
-    //     context.params.userLang = context.params.lang;
-    //   }
-    //   contact.userData = context.params;
-    // }
-    //@Deprecated>
-
-    //
+    //Default Structure for Session
     contact.session = contact.session || {
       promise: [],
       handler: [],
@@ -125,9 +107,6 @@ function ChatBox({ isSessionStart, isSessionRouted, handler = [], messagebox }) 
     BotContextStore.updateSessionTimeStamp(context);
     context.contact = contact;
 
-    //<@Deprecated
-    // context.userData = contact.userData;
-    //@Deprecated>
     return context;
   };
 
@@ -137,22 +116,21 @@ function ChatBox({ isSessionStart, isSessionRouted, handler = [], messagebox }) 
 
     //Execute Function
     var returnValue = null;
-    if (coreutils.toFunction(isSessionStart)()) {
-      console.log(inbound?.event?.sessionRouted?.sourceQueue, "===>", inbound?.event?.sessionRouted?.targetQueue);
+    if (coreutils.toFunction(adapter.isSessionStart)()) {
       try {
         if (sb.has("onSessionStart")) returnValue = await sb.execute("onSessionStart");
       } catch (e) {
         console.error("onSessionStartException", e);
       }
-    } else if (coreutils.toFunction(isSessionRouted)()) {
+    } else if (coreutils.toFunction(adapter.isSessionRouted)()) {
       try {
         if (sb.has("onSessionRouted")) returnValue = await sb.execute("onSessionRouted");
       } catch (e) {
         console.error("onSessionRoutedException", e);
       }
-    } else if (handler?.length > 0) {
+    } else if (contact.session.handler?.length > 0) {
       try {
-        returnValue = await $.reply_handle();
+        returnValue = await this.$.reply._handle();
       } catch (e) {
         console.error("onMessageListenException", e);
       }
@@ -171,7 +149,7 @@ function ChatBox({ isSessionStart, isSessionRouted, handler = [], messagebox }) 
       contact: contact,
     };
 
-    // console.log("commitDetails", JSON.stringify(commitDetails.contact))
+    //console.log("commitDetails", commitDetails);
 
     if (returnValue && returnValue.then) {
       returnValue.then(function () {
@@ -188,7 +166,7 @@ function ChatBox({ isSessionStart, isSessionRouted, handler = [], messagebox }) 
         ) {
           var promise = contact.session.promise[contact.session.promise.length - 1];
           try {
-            returnValue = await VM[promise.resolver]();
+            returnValue = await sb.execute(promise.resolver);
           } catch (e) {
             $.console.error("onPromiseResolveException", e);
           }

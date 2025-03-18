@@ -24,15 +24,21 @@ export default class ChatController {
       contact_id = crypto.randomUUID();
       response.cookie("contact_id", contact_id, { maxge: 900000, httpOnly: true });
     }
-    InboundQueue.queueTask(body, {
+    InboundQueue.task(body, {
       queue: contact_id,
     });
     return { results: [body] };
   }
 
+  @ResponseView
+  @RequestMapping({ path: "/*", method: "get" })
+  async defaultPage() {
+    return "home";
+  }
+  
   @ResponseBody
   @RequestMapping({ path: "/api/messages", method: "get" })
-  async getMessage({ request: { body,cookies }, headers }) {
+  async getMessage({ request: { body, cookies }, headers }) {
     let contact_id = cookies.contact_id;
     if (!contact_id) {
       contact_id = crypto.randomUUID();
@@ -43,9 +49,4 @@ export default class ChatController {
   }
 
 
-  @ResponseView
-  @RequestMapping({ path: "/*", method: "get" })
-  async defaultPage() {
-    return "home";
-  }
 }

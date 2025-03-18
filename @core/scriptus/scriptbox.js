@@ -6,11 +6,21 @@ var vm = require("vm");
 const ROOT_DIR = null; //path.resolve(__dirname);
 const STORE = {};
 
-function ScriptBox({ name, code, load }) {
+function ScriptBox({ name, name_fallback = [], code, load }) {
   if (!code) {
     code = STORE[name];
+
     if (!code) {
-      code = load({ name });
+      name_fallback = typeof name_fallback === "string" ? [name_fallback] : name_fallback;
+      for (let index = 0; index < name_fallback.length; index++) {
+        const fname = name_fallback[index];
+        code = STORE[fname];
+        if (code) break;
+      }
+
+      if (!code) {
+        code = load({ name });
+      }
     }
   }
 
@@ -66,7 +76,7 @@ const readFiles = function ({ scriptsDir }) {
     if (filename !== "index.js") {
       const content = fs.readFileSync(`${scriptsDir}/${filename}`, "utf-8");
       STORE[filename.split(".")[0]] = content;
-      //console.log("Loaded script", filename);
+      console.log("Loaded script", filename);
     }
   });
 };

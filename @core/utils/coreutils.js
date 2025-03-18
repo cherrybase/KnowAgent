@@ -14,6 +14,9 @@ module.exports = {
   log() {
     console.log(`APP[${OPTIONS.name}]:`, ...arguments);
   },
+  error() {
+    console.error(`APP[${OPTIONS.name}]:`, ...arguments);
+  },
   getCallerScript(_err, stackIndex = 2) {
     let err = _err;
     if (!err) {

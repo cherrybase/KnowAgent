@@ -1,5 +1,5 @@
 const mongon = require("@bootloader/mongon");
-const BotContextSchema = require("./BotContextSchema");
+const BotContextSchema = require("../model/BotContextSchema");
 
 module.exports = {
   async get({ app_id, contact_id, domain, tnt }) {
@@ -106,6 +106,20 @@ module.exports = {
       }
     );
     //console.log("clearUserData", docs);
+  },
+
+  async setUserData({ contact_id, app_id, tnt, domain, key, value }) {
+    let _domain = domain || tnt;
+    let BotContext = mongon.model(BotContextSchema, { domain: _domain });
+    let docs = await BotContext.updateOne(
+      { id: app_id + _domain + contact_id },
+      {
+        $set: {
+          ["contact.userData." + key]: value,
+        },
+      }
+    );
+    //console.log("setUserData", docs);
   },
 
   async updateSessionTimeStamp({ contact_id, app_id, tnt, domain, session_id, routing_id }) {
