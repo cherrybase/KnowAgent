@@ -1,21 +1,25 @@
 const config = require("@bootloader/config");
+const log4js = require("@bootloader/log4js");
 const { requireOptional } = require("@bootloader/utils");
 import { Controller, RequestMapping, ResponseBody, ResponseView } from "@bootloader/core/decorators";
 
-var pjson = requireOptional("../../package.json");
+var pjson = requireOptional(".../../../package.json|../../package.json|../package.json|./package.json");
 var bjson = requireOptional("../../public/build.info.json");
 const UP_STAMP = new Date();
 const UP_TIME = Date.now();
 
+const LOGGER = log4js.getLogger("AppInfoController");
+
 @Controller("/info")
 export default class AppInfoController {
   constructor() {
-    console.log("===AppInfoController instantiated:", this.constructor);
+    LOGGER.log("===AppInfoController instantiated:", this.constructor);
   }
 
   @ResponseBody
   @RequestMapping({ path: "/build", method: "get" })
   async getBuildInfo() {
+    LOGGER.info("getBuildInfo");
     return {
       package_version: pjson.version,
       app_name: config.getIfPresent("app.name"),

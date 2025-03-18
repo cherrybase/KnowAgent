@@ -1,5 +1,9 @@
-const config = require("@bootloader/config");
 const http = require("http");
+
+const config = require("@bootloader/config");
+const utils = require("@bootloader/utils");
+const log4js = require("@bootloader/log4js");
+const LOGGER = log4js.getLogger("core");
 
 const { loadApp } = require("./router");
 const { initJobs } = require("./jobs");
@@ -12,6 +16,7 @@ const APP = (function (app) {
   }
   return app;
 })(process.env.APP || DEFAULT_APP);
+utils.context.init();
 
 function BootLoader(...args) {
   let mappings = [];
@@ -29,41 +34,60 @@ function BootLoader(...args) {
     this.map(arg);
   }
 
+  this.init = async function () {
+    this.$init = new Promise((resolve) => {
+      utils.context.init(() => {
+        LOGGER.info("===================INIT");
+        resolve(this);
+      });
+    });
+    return this.$init;
+  };
+
   this.create = function (onCreate) {
-    //console.log("mappings",mappings)
-    options =
-      mappings.filter(function (arg) {
-        return arg.name == APP;
-      })[0] || options;
-    let { name = "default", path, context } = options;
-    coreutils.options(options);
-    coreutils.log(`Creating on ${context}`);
-    app = require(`./../${path}/app.js`);
-    // Auto-load controllers
-    loadApp({ name: name, context: context, app, path });
-    if (onCreate && typeof onCreate == "function") onCreate({ ...options, app });
+    utils.context.init({ tenant: "CRT" }, () => {
+      //console.log("mappings",mappings)
+      options =
+        mappings.filter(function (arg) {
+          return arg.name == APP;
+        })[0] || options;
+      let { name = "default", path, context } = options;
+      coreutils.options(options);
+      coreutils.log(`Creating on ${context}`);
+      LOGGER.info("===================create:utils.context.init", utils.context.getTraceId());
+      app = require(`./../${path}/app.js`);
+      app.use(utils.context.withRequest());
+      // Auto-load controllers
+      loadApp({ name: name, context: context, app, path });
+      if (onCreate && typeof onCreate == "function") onCreate({ ...options, app });
+    });
     return this;
   };
 
   this.launch = function (onLaunch) {
-    const port = process.env.PORT || config.get("server.port");
-    console.log(`APP[${options.name}]: Launching on ${port}:/${options.context}`);
-    //Create a server
-    var server = http.createServer(app);
-    //Lets start our server
-    server.listen(port, function () {
-      //console.log("NGROK_URL",config.getIfPresent("NGROK_URL"))
-      //console.log("ngrok.url",config.store("ngrok").url)
-      //Callback triggered when server is successfully listening. Hurray!
-      coreutils.log(`Listening on http://localhost:${port}${options.context}`);
-      //noway.emit('noway.started', null)
-      if (onLaunch && typeof onLaunch == "function") onLaunch({ ...options, app, server, config });
+    utils.context.init({ tenant: "LNC" }, () => {
+      const port = process.env.PORT || config.get("server.port");
+      console.log(`APP[${options.name}]: Launching on ${port}:/${options.context}`);
+      //Create a server
+      var server = http.createServer(app);
+      //Lets start our server
+      server.listen(port, function () {
+        //console.log("NGROK_URL",config.getIfPresent("NGROK_URL"))
+        //console.log("ngrok.url",config.store("ngrok").url)
+        //Callback triggered when server is successfully listening. Hurray!
+        coreutils.log(`Listening on http://localhost:${port}${options.context}`);
+        //noway.emit('noway.started', null)
+        if (onLaunch && typeof onLaunch == "function") onLaunch({ ...options, app, server, config });
+      });
     });
     return this;
   };
 
   this.initJobs = function () {
-    initJobs(options);
+    utils.context.init({ tenant: "JBS" }, () => {
+      initJobs(options);
+      LOGGER.info("inited....xxxxxxxxxxxxxxsxxxx", utils.context.getTraceId());
+    });
     return this;
   };
 }

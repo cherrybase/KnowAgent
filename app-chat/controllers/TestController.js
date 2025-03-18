@@ -4,7 +4,7 @@ import ajax from "../../@core/ajax";
 @Controller("/test")
 export default class TestController {
   constructor() {
-    console.log("===TestController instantsiated:", this.constructor);
+    //console.log("===TestController instantsiated:", this.constructor);
   }
 
   @ResponseView

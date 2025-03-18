@@ -25,6 +25,7 @@
     "@bootloader/local": "^1.0.0",
     "@bootloader/mongon": "^1.1.10",
     "@bootloader/redison": "^1.1.7",
+    "@bootloader/utils": "^1.0.9",
     "@bootloader/utils": "^1.0.5",
     "@huggingface/transformers": "^3.3.3",
     "@zilliz/milvus2-sdk-node": "^2.4.9",

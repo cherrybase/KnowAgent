@@ -7,7 +7,6 @@ import config from "@bootloader/config";
 import swaggerJsdoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
 import coreutils from "./utils/coreutils";
-
 /**
  * Normalize a given path by removing duplicate slashes and trailing slashes.
  */
