@@ -37,7 +37,97 @@ const webChatSchema = new mongoose.Schema({
   timestamps: true
 });
 
+const knowBaseSchema = new mongoose.Schema(
+  {
+    _id: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+    },
+    code: {
+      type: String,
+      required: true,
+    },
+    idNumber: {
+      type: Number,
+      required: false,
+    },
+    parentId: {
+      type: String,
+      required: false,
+    },
+    type: {
+      type: String,
+      required: true,
+    },
+    title: {
+      type: String,
+      required: true,
+    },
+    category: {
+      type: String,
+      required: true,
+    },
+    content: {
+      type: String,
+      required: true,
+    },
+    created: {
+      stamp: {
+        type: Number,
+        required: true,
+      },
+      hour: {
+        type: Number,
+        required: true,
+      },
+      day: {
+        type: Number,
+        required: true,
+      },
+      week: {
+        type: Number,
+        required: true,
+      },
+      byUser: {
+        type: String,
+        required: true,
+      },
+    },
+    updated: {
+      stamp: {
+        type: Number,
+        required: true,
+      },
+      hour: {
+        type: Number,
+        required: true,
+      },
+      day: {
+        type: Number,
+        required: true,
+      },
+      week: {
+        type: Number,
+        required: true,
+      },
+      byUser: {
+        type: String,
+        required: true,
+      },
+    },
+    _class: {
+      type: String,
+      required: true,
+      default: "KnowBase",
+    },
+  },
+  { collection: "DICT_KNOW_BASE" }
+);
+
+const KnowBase = mongoose.model("KnowBase", knowBaseSchema);
+
+
 // Create and export the model
 const WebChat = mongoose.model('WebChat', webChatSchema);
 
-module.exports = { WebChat };
+module.exports = { WebChat , KnowBase };
